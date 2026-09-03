@@ -106,7 +106,7 @@ Plus `set_planning_gameweek` via the declarative API.
 ## Running it locally
 
 ```bash
-git clone https://github.com/<you>/gaffer
+git clone https://github.com/ArielWandera/gaffer
 cd gaffer
 npm install
 npm run dev
