@@ -1,4 +1,4 @@
-import data from '../data/players.json';
+import data from '../data/players.json' with { type: 'json' };
 
 export const PLAYERS = data.players;
 export const TEAMS = data.teams;
