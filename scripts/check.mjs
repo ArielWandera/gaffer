@@ -37,7 +37,7 @@ ok(state.squad.length === 15, 'seed squad has 15 players');
 
 // 2 — tool list
 const first = await cycle(async (h) => h.names);
-ok(first.length === 8, `eight tools registered (${first.join(', ')})`);
+ok(first.length === 9, `nine tools registered (${first.join(', ')})`);
 ok(first.includes('make_free_transfer') && !first.includes('take_points_hit'), 'free-transfer tool present, hit tool absent at 1 FT');
 
 // 3 — get_squad_state reflects a MANUAL change made by clicking
@@ -150,12 +150,12 @@ globalThis.document.modelContext = saved;
   // initialState, not the mutated `state` above: the tool set is state-dependent
   // and this check is about where the context lives, not which moves are legal.
   let r = registerTools(initialState, () => {});
-  ok(r.supported && r.names.length === 8, `navigator.modelContext found (${r.api})`);
+  ok(r.supported && r.names.length === 9, `navigator.modelContext found (${r.api})`);
 
   seen.clear();
   setNav({ modelContext: shim(false) });
   r = registerTools(initialState, () => {});
-  ok(seen.size === 8, 'tools still register when the options argument is rejected');
+  ok(seen.size === 9, 'tools still register when the options argument is rejected');
 
   setNav(undefined);
   globalThis.document = {};

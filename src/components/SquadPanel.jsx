@@ -3,6 +3,7 @@ import { BY_ID, SNAPSHOT_DATE } from '../state/initialState.js';
 import { RULES, CHIP_LABELS } from '../state/fplRules.js';
 import { pointsHit } from '../state/reducer.js';
 import { validateSquad, squadWarnings } from '../state/validate.js';
+import { fetchTeam } from '../state/loadTeam.js';
 
 function planText(state) {
   const lines = [`Gaffer — GW${state.gameweek} plan`, ''];
@@ -22,6 +23,9 @@ function planText(state) {
 
 export default function SquadPanel({ state, dispatch, mcpStatus }) {
   const [copied, setCopied] = useState(false);
+  const [entryId, setEntryId] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(null);
   const { valid, violations } = validateSquad(state, BY_ID);
   const warnings = squadWarnings(state, BY_ID);
   const hit = pointsHit(state);
@@ -37,12 +41,47 @@ export default function SquadPanel({ state, dispatch, mcpStatus }) {
     }
   };
 
+  const load = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setLoadError(null);
+    const r = await fetchTeam(entryId);
+    setLoading(false);
+    if (!r.ok) return setLoadError(r.error);
+    dispatch({ type: 'loadTeam', team: r.team });
+    setEntryId('');
+  };
+
   return (
     <aside className="panel squad" aria-label="Squad summary">
       <header className="brand">
         <h1>Gaffer</h1>
-        <p className="tag">Gameweek {state.gameweek} planning board</p>
+        <p className="tag">
+          {state.loaded ? state.loaded.teamName : 'Gameweek ' + state.gameweek + ' planning board'}
+        </p>
+        {state.loaded && (
+          <p className="tag-sub">{state.loaded.manager} · GW{state.loaded.gameweek} squad</p>
+        )}
       </header>
+
+      <form className="load-team" onSubmit={load}>
+        <label htmlFor="entry">Load your FPL team</label>
+        <div className="load-row">
+          <input
+            id="entry"
+            inputMode="numeric"
+            placeholder="team id, e.g. 6731094"
+            value={entryId}
+            onChange={(e) => setEntryId(e.target.value)}
+          />
+          <button type="submit" disabled={loading || !entryId.trim()}>
+            {loading ? '…' : 'Load'}
+          </button>
+        </div>
+        {loadError
+          ? <p className="load-err">{loadError}</p>
+          : <p className="fine">The number in the URL when you view your team on the FPL site.</p>}
+      </form>
 
       <dl className="stats">
         <div><dt>Bank</dt><dd className={state.bank < 0 ? 'bad' : ''}>£{state.bank.toFixed(1)}m</dd></div>

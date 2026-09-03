@@ -383,3 +383,29 @@ button.primary:disabled { background: var(--line); color: var(--ink-faint); curs
 }
 .armband.cap { background: var(--ink); color: var(--ground); }
 .armband.vice { background: transparent; color: var(--ink-dim); border: 1px solid var(--line); }
+
+/* ── load your own team ───────────────────────────────────────────────────
+   The board is worth nothing to a visitor looking at somebody else's squad.
+   This is the first thing in the panel for that reason. */
+.load-team { display: flex; flex-direction: column; gap: 6px; margin: 0 0 4px; }
+.load-team label {
+  font: 600 11px var(--ui); letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.load-row { display: flex; gap: 6px; }
+.load-row input {
+  flex: 1; min-width: 0;
+  background: var(--ground); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 3px;
+  padding: 7px 9px; font: 400 12px var(--ui);
+}
+.load-row input:focus { outline: none; border-color: var(--agent); }
+.load-row button {
+  background: var(--raise-2); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 3px;
+  padding: 7px 12px; font: 500 11px var(--ui); cursor: pointer;
+}
+.load-row button:hover:not(:disabled) { border-color: var(--agent); color: var(--agent); }
+.load-row button:disabled { opacity: 0.4; cursor: default; }
+.load-err { font-size: 11px; color: var(--bad); line-height: 1.35; margin: 0; }
+.brand .tag-sub { margin: 1px 0 0; font-size: 11px; color: var(--ink-faint); }

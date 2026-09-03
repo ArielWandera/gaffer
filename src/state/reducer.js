@@ -100,6 +100,38 @@ export function reducer(state, action) {
     case 'setGameweek':
       return { ...state, gameweek: action.gameweek };
 
+    // Replace the whole board with a squad fetched from FPL. Everything
+    // provisional is dropped on purpose: pending transfers, highlights and
+    // chips played in this session belonged to the previous team, not this one.
+    case 'loadTeam': {
+      const { team } = action;
+      const known = team.picks.filter((p) => BY_ID[p.id]);
+      if (known.length !== RULES.SQUAD_SIZE) return state;
+      const cap = known.find((p) => p.captain);
+      const vice = known.find((p) => p.vice);
+      return {
+        ...state,
+        squad: known.map((p, slot) => ({ id: p.id, starting: p.starting, slot })),
+        captain: cap ? cap.id : null,
+        viceCaptain: vice ? vice.id : null,
+        bank: round(team.bank),
+        freeTransfers: 1,
+        transfersMade: [],
+        chipsUsed: Array.isArray(team.chips_used) ? team.chips_used : [],
+        activeChip: null,
+        highlighted: [],
+        highlightLabel: null,
+        selectedId: null,
+        loaded: {
+          entryId: team.entry_id,
+          teamName: team.team_name,
+          manager: team.manager,
+          gameweek: team.gameweek,
+        },
+        log: logged(state, action.source, `loaded ${team.team_name}`),
+      };
+    }
+
     case 'setFreeTransfers':
       return { ...state, freeTransfers: Math.max(0, Math.min(RULES.MAX_BANKED_TRANSFERS, action.n)) };
 

@@ -2,6 +2,7 @@ import { BY_ID, PLAYERS, SNAPSHOT_DATE } from '../state/initialState.js';
 import { RULES, CHIP_LABELS } from '../state/fplRules.js';
 import { reducer, pointsHit } from '../state/reducer.js';
 import { validateSquad, squadWarnings } from '../state/validate.js';
+import { fetchTeam } from '../state/loadTeam.js';
 
 const text = (obj) => ({ content: [{ type: 'text', text: JSON.stringify(obj) }] });
 
@@ -348,6 +349,40 @@ export function registerTools(state, dispatch) {
 
       commit(action);
       return text({ ok: true, summary: `${p.name} is now ${role === 'vice' ? 'vice-captain' : 'captain'}.` });
+    },
+  });
+
+  reg({
+    name: 'load_manager_team',
+    description:
+      'Load a real Fantasy Premier League squad onto the board from that manager\'s team id — ' +
+      'the number in the URL when they view their team on the FPL site. This fetches the squad ' +
+      'they have *saved*: their fifteen players, bank, captain and vice-captain. It replaces ' +
+      'whatever is currently on the board, discarding any unsaved planning, so confirm with the ' +
+      'user before calling it if they have already made changes. Ask them for their team id ' +
+      'rather than guessing one.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        entry_id: { type: 'number', description: 'The manager\'s FPL team id, e.g. 6731094.' },
+      },
+      required: ['entry_id'],
+    },
+    async execute({ entry_id }) {
+      const r = await fetchTeam(entry_id);
+      if (!r.ok) return text({ ok: false, error: r.error });
+
+      commit({ type: 'loadTeam', team: r.team });
+      return text({
+        ok: true,
+        summary: `Loaded "${r.team.team_name}" (${r.team.manager}) as it stood after gameweek ${r.team.gameweek}.`,
+        bank_m: r.team.bank,
+        squad_value_m: r.team.squad_value,
+        overall_rank: r.team.overall_rank,
+        note:
+          'This is the saved squad. Anything the user changes on the board from here exists only ' +
+          'in this tab — call get_squad_state to read it.',
+      });
     },
   });
 

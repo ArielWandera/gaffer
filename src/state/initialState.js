@@ -39,6 +39,7 @@ export const initialState = {
   highlighted: [],
   highlightLabel: null,
   gameweek: CURRENT_GW,
+  loaded: null,        // set once a real team is pulled in from FPL
   selectedId: null,    // the squad player the user has clicked, awaiting a swap
   log: [],             // agent actions, shown in the UI so the video is legible
 };
