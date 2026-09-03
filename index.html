@@ -4,15 +4,57 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="dark" />
-    <meta name="description" content="Gaffer — a Fantasy Premier League planning board where a human and an AI agent build the squad together, over WebMCP." />
+    <meta name="description" content="Gaffer — a Fantasy Premier League planning board where a human and an AI agent build the squad together, over WebMCP. The agent reads the draft squad you made by hand, and the registered tools are the moves that are legal right now." />
     <title>Gaffer — FPL planning board</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Gaffer — FPL planning board" />
+    <meta property="og:description" content="A human and an AI agent build a Fantasy Premier League squad together, over WebMCP. The agent sees the provisional squad that lives only in the browser tab — state no server has." />
+    <meta property="og:url" content="https://gaffer-psi.vercel.app/" />
+    <meta name="twitter:card" content="summary" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div id="root"></div>
+
+    <!--
+      Gaffer registers its WebMCP tools from JavaScript, so a fetch that does not
+      run scripts sees only the empty root above. This block gives crawlers, link
+      previews and non-JS clients something real to read, and tells anyone testing
+      the protocol where the tools actually come from.
+    -->
+    <noscript>
+      <h1>Gaffer — FPL planning board</h1>
+      <p>
+        Gaffer is a Fantasy Premier League planning board where a human and an AI
+        agent build the squad together over
+        <a href="https://github.com/webmachinelearning/webmcp">WebMCP</a>. In the hour
+        before a deadline your squad is provisional — a player swapped in, a transfer
+        unconfirmed, a budget recalculating. That state lives only in the browser tab.
+        It has never been saved, so no server-side API and no conventional MCP server
+        can see it. Gaffer hands it to the agent directly.
+      </p>
+      <p>
+        The registered tool set <em>is</em> the set of legal moves. Run out of free
+        transfers and <code>make_free_transfer</code> is not left in place to return an
+        error — it is unregistered, and <code>take_points_hit</code> takes its place.
+        Play the wildcard and <code>play_wildcard</code> ceases to exist. An illegal
+        move is not rejected; it is uncallable.
+      </p>
+      <p>
+        Tools are registered with <code>document.modelContext.registerTool</code> and
+        torn down with an <code>AbortController</code>, so this page needs JavaScript to
+        run. Open it in a WebMCP-capable client, or in Chrome with
+        <code>chrome://flags/#enable-webmcp-testing</code> enabled, and ask the agent
+        what tools the page provides.
+      </p>
+      <p>Source: <a href="https://github.com/ArielWandera/gaffer">github.com/ArielWandera/gaffer</a></p>
+    </noscript>
+
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
