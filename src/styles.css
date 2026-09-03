@@ -3,29 +3,34 @@
    and fixture difficulty as the single place real colour is allowed. */
 
 :root {
-  --ground: #171a1f;
-  --raise: #1e222a;
-  --raise-2: #252a34;
-  --line: #2f3540;
-  --line-soft: #262b34;
-  --ink: #e8ebf0;
-  --ink-dim: #97a0ae;
-  --ink-faint: #6b7480;
+  /* Ground is near-black rather than slate: the cards, the amber and the
+     fixture ramp all gain contrast against it, and it reads as a surface the
+     board sits on rather than a grey page. */
+  --ground: #0b0d11;
+  --raise: #13161c;
+  --raise-2: #1b1f27;
+  --line: #272c36;
+  --line-soft: #1c2028;
+  --ink: #f2f4f8;
+  --ink-dim: #9aa4b2;
+  --ink-faint: #6f7886;
 
   /* the agent's colour, and nothing else's */
   --agent: #ffc24b;
-  --agent-soft: rgba(255, 194, 75, 0.14);
+  --agent-soft: rgba(255, 194, 75, 0.13);
+  --agent-glow: rgba(255, 194, 75, 0.28);
 
-  --bad: #e2574c;
-  --bad-soft: rgba(226, 87, 76, 0.12);
-  --warn: #d9a441;
+  --bad: #f2635a;
+  --bad-soft: rgba(242, 99, 90, 0.12);
+  --warn: #e0aa48;
 
-  /* fixture difficulty, cool to hot */
-  --fdr-1: #2fbf9f;
-  --fdr-2: #6fbf5a;
-  --fdr-3: #7d8593;
-  --fdr-4: #d9743f;
-  --fdr-5: #c94141;
+  /* fixture difficulty, cool to hot — 3 stays neutral so it never reads as a
+     verdict, and never competes with the agent amber */
+  --fdr-1: #2ecfa4;
+  --fdr-2: #74c95c;
+  --fdr-3: #79828f;
+  --fdr-4: #e07a41;
+  --fdr-5: #d2453f;
 
   --condensed: 'Barlow Condensed', 'Arial Narrow', system-ui, sans-serif;
   --ui: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -137,11 +142,14 @@ h3 { font-size: 11px; color: var(--ink-faint); font-weight: 600; letter-spacing:
 .agentlog h3 { color: var(--agent); }
 .agentlog li { font-size: 11px; color: var(--ink-dim); padding: 2px 0; }
 
+/* Deliberately not amber. Amber means "the agent did this" everywhere else in
+   the app, and a button the person clicks themselves must not borrow it. */
 button.primary {
-  background: var(--agent); color: #221a06; border: 0; border-radius: 2px;
+  background: var(--raise-2); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 3px;
   padding: 10px; font-weight: 600; font-size: 13px; letter-spacing: 0.01em;
 }
-button.primary:hover { filter: brightness(1.08); }
+button.primary:hover { border-color: var(--ink-faint); background: #222732; }
 button.primary:disabled { background: var(--line); color: var(--ink-faint); cursor: not-allowed; }
 
 .foot { margin-top: auto; padding-top: 14px; display: flex; flex-direction: column; gap: 5px; border-top: 1px solid var(--line-soft); }
@@ -409,3 +417,24 @@ button.primary:disabled { background: var(--line); color: var(--ink-faint); curs
 .load-row button:disabled { opacity: 0.4; cursor: default; }
 .load-err { font-size: 11px; color: var(--bad); line-height: 1.35; margin: 0; }
 .brand .tag-sub { margin: 1px 0 0; font-size: 11px; color: var(--ink-faint); }
+
+
+/* ── depth ────────────────────────────────────────────────────────────────
+   A dark UI goes flat without a light source. One faint wash from the top of
+   the pitch does most of the work; the rest is borders. */
+.middle {
+  background:
+    radial-gradient(120% 60% at 50% -10%, rgba(255, 255, 255, 0.035), transparent 70%);
+}
+.panel.squad, .panel.search { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03); }
+.card {
+  background: linear-gradient(var(--raise-2), var(--raise));
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+.card-pitch:hover { border-color: var(--line); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); }
+.card.is-highlighted { box-shadow: 0 0 0 1px var(--agent), 0 0 18px var(--agent-glow); }
+.brand h1 {
+  background: linear-gradient(180deg, var(--ink), #b9c2d0);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.stats { border-radius: 4px; overflow: hidden; }
