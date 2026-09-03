@@ -24,7 +24,7 @@ const tools = async () => (await mc.getTools()).map(t => t.name);
 await tools()
 ```
 
-Nine names. Eight registered from JavaScript, one from markup on the form.
+Ten names. Nine registered from JavaScript, one from markup on the form.
 
 > "The page is handing an agent eight tools. It's not scraping my UI — the page
 > is telling it what it's allowed to do."
