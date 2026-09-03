@@ -2,7 +2,7 @@
 // real registerTools against a fake document.modelContext.
 import { initialState, BY_ID } from '../src/state/initialState.js';
 import { reducer } from '../src/state/reducer.js';
-import { validateSquad } from '../src/state/validate.js';
+import { validateSquad, squadWarnings } from '../src/state/validate.js';
 import { registerTools } from '../src/webmcp/tools.js';
 
 let fail = 0;
@@ -41,23 +41,29 @@ ok(first.length === 7, `seven tools registered (${first.join(', ')})`);
 ok(first.includes('make_free_transfer') && !first.includes('take_points_hit'), 'free-transfer tool present, hit tool absent at 1 FT');
 
 // 3 — get_squad_state reflects a MANUAL change made by clicking
-state = reducer(state, { type: 'swapStarting', a: 55, b: 464 }); // bench Watkins, start Wissa
+state = reducer(state, { type: 'swapStarting', a: 481, b: 271 }); // bench Anderson, start Muniz
 const read = await cycle(() => call('get_squad_state'));
-ok(read.bench.some((p) => p.name === 'Watkins'), 'get_squad_state sees the hand-made bench swap');
-ok(read.warnings.some((w) => w.includes('Watkins')), 'unavailable player surfaced as a warning');
-ok(read.free_transfers === 1 && read.bank_m === 0.8, 'bank and free transfers reported');
+ok(read.bench.some((p) => p.name === 'Anderson'), 'get_squad_state sees the hand-made bench swap');
+ok(read.free_transfers === 1 && read.bank_m === 0.0, 'bank and free transfers reported');
+
+// The real squad has nobody flagged, so drive the availability warning with a
+// squad that does: Saliba is injured in the snapshot and starting here.
+const injured = { ...state, squad: state.squad.map((s) => (s.id === 4 ? { ...s, id: 6 } : s)) };
+ok(squadWarnings(injured, BY_ID).some((w) => w.includes('Saliba')), 'unavailable player surfaced as a warning');
 
 // 4 — three-per-club rule blocks, with a recoverable message
-const arsIn = (await cycle(() => call('search_players', { team: 'ARS', position: 'DEF', limit: 5 }))).players;
+// Hinshelwood is affordable and in form, so it is exactly the move an agent
+// would reach for — and Brighton are already at three, so it is not legal.
+const bhaIn = (await cycle(() => call('search_players', { team: 'BHA', position: 'MID', limit: 5 }))).players;
 const blocked = await cycle(() => call('propose_transfer', {
-  player_out_id: 586, player_in_id: arsIn[0].id, reason: 'better fixtures',
+  player_out_id: 481, player_in_id: bhaIn[0].id, reason: 'better form',
 }));
-ok(blocked.ok === false && blocked.violations?.some((v) => v.includes('ARS')), `4th Arsenal player refused: "${blocked.violations?.[0]}"`);
+ok(blocked.ok === false && blocked.violations?.some((v) => v.includes('BHA')), `4th Brighton player refused: "${blocked.violations?.[0]}"`);
 ok(validateSquad(state, BY_ID).valid, 'state untouched after the illegal proposal');
 
 // 5 — a legal transfer spends the free transfer
 const legal = await cycle(() => call('propose_transfer', {
-  player_out_id: 55, player_in_id: 165, reason: 'Watkins has left the league; João Pedro is the top-form forward in budget',
+  player_out_id: 481, player_in_id: 565, reason: 'Anderson has 2.5 form; Sangaré is on 9.0 and £0.7m cheaper',
 }));
 ok(legal.ok === true, `legal transfer accepted: ${legal.summary || legal.error}`);
 ok(state.freeTransfers === 0, 'free transfers now 0');
@@ -75,9 +81,9 @@ ok(!third.includes('play_wildcard'), 'play_wildcard gone after use');
 ok(third.includes('make_free_transfer'), 'transfers free again while the wildcard is active');
 
 // 8 — highlights and captaincy
-await cycle(() => call('highlight_players', { player_ids: [411, 12], label: 'premium attackers' }));
+await cycle(() => call('highlight_players', { player_ids: [411, 426], label: 'premium attackers' }));
 ok(state.highlighted.length === 2 && state.highlightLabel === 'premium attackers', 'highlight_players sets visible state');
-const benchCap = await cycle(() => call('set_captain', { player_id: 55, role: 'captain' }));
+const benchCap = await cycle(() => call('set_captain', { player_id: 496, role: 'captain' }));
 ok(benchCap.ok === false, 'captaincy refused for a non-starter');
 
 // 9 — readOnlyHint annotations

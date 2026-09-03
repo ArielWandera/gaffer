@@ -2,8 +2,12 @@
 
 Read this out. Unscripted runs long. The 0:20–1:20 block is **one unbroken take**.
 
-Before recording: fresh incognito-style window, no bookmarks bar, zoom 100%,
-board loaded at https://gaffer-psi.vercel.app, agent panel open alongside.
+Before recording: fresh window, no bookmarks bar, zoom 100%, board loaded at
+https://gaffer-psi.vercel.app, agent panel open alongside.
+
+The board is loaded with the **real** squad of FPL entry 6731094 — "João you
+doing?" — as it stood after gameweek 2. That is worth saying out loud; it is a
+real team with real constraints, not a fixture.
 
 ---
 
@@ -22,15 +26,17 @@ Cursor idles over the squad. Don't click yet.
 
 **Beat 1 — the agent reads what's on screen.**
 
-> "Watkins has left the league and he's still in my starting eleven. Let's ask."
+> "This is my actual team. Bank is empty, and Anderson's on two-and-a-half form.
+> Let's ask."
 
-Type: **"Have a look at my squad and tell me what's wrong with my attack."**
+Type: **"Have a look at my squad and tell me what's wrong with it."**
 
 The agent calls `get_squad_state`. Say, over it:
 
 > "It's reading the board as it sits — the bank, the bench, everything."
 
-It comes back with Watkins (unavailable, £7.8m, still starting) and a tight £0.8m bank.
+It comes back with Anderson (£6.4m, form 2.5) and a bank of exactly **£0.0m** —
+so nothing can be bought until something is sold.
 
 **Beat 2 — it shows its work on screen.**
 
@@ -40,21 +46,27 @@ Type: **"Show me who I could replace him with."**
 
 > "That's the agent drawing on my board, not just talking at me."
 
-**Beat 3 — the constraint bites.** *(safety net: if it doesn't reach for Arsenal on its own, ask directly — "what about an Arsenal defender?")*
+**Beat 3 — the constraint bites.** *(safety net: if it doesn't reach for Brighton
+on its own, ask directly — "what about Hinshelwood?")*
 
-When it proposes a 4th Arsenal player:
+Hinshelwood is £6.0m and on 8.0 form — affordable, in form, exactly the move you
+would want. And it is illegal:
 
-> "It can't. I already have three Arsenal players and it gets told exactly that."
+> "It can't. I already have three Brighton players and it gets told exactly that."
 
-The refusal reads: *"4 players from ARS — the limit is 3 per club."* It corrects itself.
+The refusal reads: *"4 players from BHA — the limit is 3 per club."* It corrects
+itself. Note the market panel greys De Cuyper out with **"3 from BHA"** before
+anyone even asks — the rule is visible on the board.
 
 **Beat 4 — the override. This is the whole point of the video.**
 
-It proposes Watkins → João Pedro. Before accepting, **click a different player out by hand.**
+It proposes Anderson → M.Sangaré (£5.7m, form 9.0). Before accepting, **click a
+different player out by hand.**
 
 > "Now watch. **I've changed this myself, and nothing has been saved.** No submit,
 > no refresh, no request to any server. There is no API anywhere that knows what
-> I just did."
+> I just did — not even FPL's own. Their API will hand you my saved team. The
+> version I'm looking at right now exists in no endpoint at any login."
 
 Type: **"I changed something — carry on."**
 
@@ -107,3 +119,20 @@ Hold on the URL: **gaffer-psi.vercel.app**
 - Tool list looks stale → swap a player by hand; that re-registers everything.
 - Transfer refused unexpectedly → that's the validator working, use it: read the
   violation aloud and let the agent recover. It's a better beat than a clean run.
+- Page won't load → the network has been dropping. Retry before assuming a bug.
+
+---
+
+## Numbers you may want on hand
+
+| | |
+|---|---|
+| Squad value | £100.1m |
+| Bank | £0.0m |
+| Free transfers | 1 |
+| Formation | 3-5-2 |
+| Captain / vice | Haaland / B.Fernandes |
+| At the club limit | Brighton — Verbruggen, Gomez, Groß |
+| Weakest form | Muniz 0.5 (bench), Anderson 2.5 (starting) |
+| The blocked move | Hinshelwood, BHA, £6.0m, form 8.0 |
+| The legal move | Anderson out, M.Sangaré in — £5.7m, form 9.0 |
