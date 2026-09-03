@@ -37,7 +37,7 @@ ok(state.squad.length === 15, 'seed squad has 15 players');
 
 // 2 — tool list
 const first = await cycle(async (h) => h.names);
-ok(first.length === 7, `seven tools registered (${first.join(', ')})`);
+ok(first.length === 8, `eight tools registered (${first.join(', ')})`);
 ok(first.includes('make_free_transfer') && !first.includes('take_points_hit'), 'free-transfer tool present, hit tool absent at 1 FT');
 
 // 3 — get_squad_state reflects a MANUAL change made by clicking
@@ -86,6 +86,32 @@ ok(state.highlighted.length === 2 && state.highlightLabel === 'premium attackers
 const benchCap = await cycle(() => call('set_captain', { player_id: 496, role: 'captain' }));
 ok(benchCap.ok === false, 'captaincy refused for a non-starter');
 
+// 8b — substitutions, and the shape rule that governs them
+{
+  const before = await cycle(() => call('get_squad_state'));
+  // Kinsky is the reserve keeper. Bringing him on for an outfielder would leave
+  // two goalkeepers in the XI, which is not a shape you may field.
+  const illegalSub = await cycle(() => call('substitute_player', { starter_id: 426, bench_id: 496 }));
+  ok(illegalSub.ok === false && illegalSub.violations?.some((v) => v.includes('GK')),
+    `two-keeper XI refused: "${illegalSub.violations?.[0]}"`);
+  ok(validateSquad(state, BY_ID).valid, 'state untouched after the illegal substitution');
+
+  // O'Shea is a defender and Muniz a forward, so this crosses positions and is
+  // still legal: 3-5-2 becomes 4-5-1, which you may field.
+  const legalSub = await cycle(() => call('substitute_player', {
+    starter_id: 165, bench_id: 304, reason: 'shore up the defence',
+  }));
+  ok(legalSub.ok === true, `cross-position substitution accepted: ${legalSub.summary || legalSub.error}`);
+  // Do not hardcode the shape: earlier sections have already transferred players
+  // in and out. Assert the invariant instead — ten outfielders, and one more
+  // defender than before now that a defender has come on for a forward.
+  const shape = (f) => f.split('-').map(Number);
+  ok(/^\d-\d-\d$/.test(legalSub.formation) && shape(legalSub.formation).reduce((a, b) => a + b) === 10,
+    `formation reported back as ${legalSub.formation}, ten outfielders`);
+  ok(shape(legalSub.formation)[0] === shape(before.formation)[0] + 1,
+    `defence grew from ${before.formation} to ${legalSub.formation}`);
+}
+
 // 9 — readOnlyHint annotations
 const ann = await cycle(async (h) => ({ s: registry.get('get_squad_state'), p: registry.get('search_players'), t: registry.get('propose_transfer') }));
 ok(ann.s.annotations?.readOnlyHint === true && ann.p.annotations?.readOnlyHint === true, 'read tools carry readOnlyHint');
@@ -124,12 +150,12 @@ globalThis.document.modelContext = saved;
   // initialState, not the mutated `state` above: the tool set is state-dependent
   // and this check is about where the context lives, not which moves are legal.
   let r = registerTools(initialState, () => {});
-  ok(r.supported && r.names.length === 7, `navigator.modelContext found (${r.api})`);
+  ok(r.supported && r.names.length === 8, `navigator.modelContext found (${r.api})`);
 
   seen.clear();
   setNav({ modelContext: shim(false) });
   r = registerTools(initialState, () => {});
-  ok(seen.size === 7, 'tools still register when the options argument is rejected');
+  ok(seen.size === 8, 'tools still register when the options argument is rejected');
 
   setNav(undefined);
   globalThis.document = {};

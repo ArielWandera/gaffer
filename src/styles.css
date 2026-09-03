@@ -331,3 +331,55 @@ button.primary:disabled { background: var(--line); color: var(--ink-faint); curs
   .card { width: calc(33.333% - 6px); }
   .pitch, .gw-form { max-width: none; }
 }
+
+/* ── the selection bar ────────────────────────────────────────────────────
+   Clicking a player used to do nothing visible unless you happened to know a
+   second click would swap them. The bar names the player and spells out what
+   the click actually affords, so the armband and substitutions are reachable
+   by hand — the agent should not be able to do things the manager cannot. */
+.selection-bar {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin: 2px auto 0; padding: 8px 12px;
+  width: 100%; max-width: 760px;
+  background: var(--raise); border: 1px solid var(--line);
+  border-radius: 4px;
+}
+.selection-bar .sel-name {
+  font-family: var(--condensed); font-size: 17px; letter-spacing: 0.01em;
+  color: var(--ink); margin-right: 2px;
+}
+.selection-bar button:not(.linkish) {
+  font: 500 11px var(--ui); letter-spacing: 0.03em;
+  color: var(--ink); background: var(--raise-2);
+  border: 1px solid var(--line); border-radius: 3px;
+  padding: 5px 10px; cursor: pointer;
+}
+.selection-bar button:not(.linkish):hover:not(:disabled) {
+  border-color: var(--agent); color: var(--agent);
+}
+.selection-bar button:disabled { opacity: 0.4; cursor: default; }
+.selection-bar .sel-hint { font-size: 11px; color: var(--ink-faint); }
+.selection-bar .linkish { margin-left: auto; }
+
+/* ── polish ───────────────────────────────────────────────────────────────
+   Small things that read as care on a recording: the pitch gets faint
+   touchlines so it looks like a surface rather than a list, cards lift on
+   hover, and the armband reads as an armband. */
+.pitch {
+  /* A halfway line across the pitch and a centre circle on it — faint enough to
+     read as a surface without competing with the cards sitting on top. */
+  background:
+    linear-gradient(var(--line-soft), var(--line-soft)) center/100% 1px no-repeat,
+    radial-gradient(circle at 50% 50%, transparent 53px, var(--line-soft) 53px, var(--line-soft) 54px, transparent 54px) center/100% 100% no-repeat;
+  border-radius: 6px;
+}
+.card-pitch { transition: transform 90ms ease, border-color 90ms ease; }
+.card-pitch:hover { transform: translateY(-2px); }
+.card.is-selected { border-color: var(--agent); box-shadow: 0 0 0 1px var(--agent); }
+.armband {
+  display: inline-grid; place-items: center;
+  width: 15px; height: 15px; border-radius: 50%;
+  font: 600 9px var(--ui); letter-spacing: 0;
+}
+.armband.cap { background: var(--ink); color: var(--ground); }
+.armband.vice { background: transparent; color: var(--ink-dim); border: 1px solid var(--line); }

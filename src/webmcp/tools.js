@@ -53,6 +53,7 @@ export function serialiseState(state) {
     squad_value_m: Math.round(state.squad.reduce((n, s) => n + BY_ID[s.id].price, 0) * 10) / 10,
     free_transfers: state.freeTransfers,
     points_hit_so_far: pointsHit(state),
+    formation: formationOf(state),
     starting_xi: squad.filter((p) => p.starting),
     bench: squad.filter((p) => !p.starting),
     captain: state.captain ? BY_ID[state.captain].name : null,
@@ -99,6 +100,12 @@ export function serialiseState(state) {
  * Checking every known location costs nothing and turns a silent total failure
  * into a working tool set.
  */
+// "3-5-2" — the shape of the XI, which is what a manager actually reads.
+function formationOf(state) {
+  const xi = state.squad.filter((s) => s.starting).map((s) => BY_ID[s.id]);
+  return ['DEF', 'MID', 'FWD'].map((pos) => xi.filter((p) => p && p.position === pos).length).join('-');
+}
+
 export function resolveModelContext() {
   const roots = [
     [typeof document !== 'undefined' ? document : null, 'document.modelContext'],
@@ -341,6 +348,63 @@ export function registerTools(state, dispatch) {
 
       commit(action);
       return text({ ok: true, summary: `${p.name} is now ${role === 'vice' ? 'vice-captain' : 'captain'}.` });
+    },
+  });
+
+  reg({
+    name: 'substitute_player',
+    description:
+      'Swap one starting XI player with one player on the bench. The two swap places, so the XI ' +
+      'stays at eleven. The resulting formation must still be legal — one GK, three to five DEF, ' +
+      'two to five MID, one to three FWD — and the armbands must still sit in the XI. If the swap ' +
+      'would break any of that, nothing changes and the violation is returned so you can pick a ' +
+      'different pairing. Positions do not have to match: a defender may come on for a midfielder ' +
+      'as long as the shape that results is one you are allowed to field.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        starter_id: { type: 'number', description: 'Id of the starting XI player coming off.' },
+        bench_id: { type: 'number', description: 'Id of the benched player coming on.' },
+        reason: { type: 'string', description: 'One short sentence on why this improves the XI.' },
+      },
+      required: ['starter_id', 'bench_id'],
+    },
+    async execute({ starter_id, bench_id, reason }) {
+      const outP = BY_ID[starter_id];
+      const inP = BY_ID[bench_id];
+      if (!outP) return text({ ok: false, error: `No player with id ${starter_id}.` });
+      if (!inP) return text({ ok: false, error: `No player with id ${bench_id}.` });
+
+      const outSlot = state.squad.find((s) => s.id === starter_id);
+      const inSlot = state.squad.find((s) => s.id === bench_id);
+      if (!outSlot) return text({ ok: false, error: `${outP.name} is not in the squad.` });
+      if (!inSlot) return text({ ok: false, error: `${inP.name} is not in the squad.` });
+      if (!outSlot.starting) {
+        return text({ ok: false, error: `${outP.name} is already on the bench.` });
+      }
+      if (inSlot.starting) {
+        return text({ ok: false, error: `${inP.name} is already in the starting XI.` });
+      }
+
+      const action = { type: 'swapStarting', a: starter_id, b: bench_id };
+      const next = preview(action);
+      const { valid, violations } = validateSquad(next, BY_ID);
+      if (!valid) {
+        return text({
+          ok: false,
+          error: `${outP.name} off for ${inP.name} would leave an XI you cannot field.`,
+          violations,
+          hint: 'Call get_squad_state to see the current shape, then pick a pairing that keeps it legal.',
+        });
+      }
+
+      commit(action);
+      return text({
+        ok: true,
+        summary: `${inP.name} (${inP.position}) comes on for ${outP.name} (${outP.position}).`,
+        reason,
+        formation: formationOf(next),
+      });
     },
   });
 

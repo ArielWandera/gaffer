@@ -95,6 +95,7 @@ FPL is the case study. The pattern is the product.
 | `search_players` | Searches the player pool by position, price, form and club, sorted by form. Defaults the budget to what the user can actually afford for the player being replaced, and flags results that would break the three-per-club limit. *Read-only.* |
 | `propose_transfer` | Swaps one player out for another. Validates first; on failure returns the violation and changes nothing. Requires a `reason`, which is shown to the user. |
 | `set_captain` | Assigns the captain or vice-captain armband. Refuses a benched player or a duplicate. |
+| `substitute_player` | Swaps a starter with a substitute. Positions need not match, but the resulting formation must be one you may field — one GK, 3–5 DEF, 2–5 MID, 1–3 FWD. Returns the violation instead of an illegal XI. |
 | `highlight_players` | Outlines players on screen with a short label. Purely visual — changes nothing about the squad. |
 | `make_free_transfer` / `take_points_hit` | Mutually exclusive. Which one exists depends on free transfers remaining. |
 | `play_wildcard` | Makes all transfers free this gameweek. Disappears permanently once used. |
