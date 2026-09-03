@@ -110,7 +110,9 @@ export default function SquadPanel({ state, dispatch, mcpStatus }) {
 
       <footer className="foot">
         <span className={`mcp ${mcpStatus.ok ? 'on' : 'off'}`}>
-          <i /> {mcpStatus.ok ? `WebMCP · ${mcpStatus.count} tools live` : 'WebMCP not detected'}
+          <i /> {mcpStatus.ok
+            ? `WebMCP · ${mcpStatus.count} tools live · ${mcpStatus.api}`
+            : 'WebMCP not detected'}
         </span>
         <span className="fine">Player data snapshot {SNAPSHOT_DATE}</span>
       </footer>

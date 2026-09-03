@@ -89,18 +89,57 @@ export function serialiseState(state) {
  * manages its own tool set with registerTool and AbortSignal, and does not
  * dispatch a change event of its own.
  */
+/**
+ * Find the model context wherever this client keeps it.
+ *
+ * `document.modelContext` is the current location and the one Chrome ships.
+ * `navigator.modelContext` is the older spelling — deprecated in Chrome 150 but
+ * still what some clients expose, and a client that only has that one used to
+ * make us fail closed: we registered nothing at all and said nothing about it.
+ * Checking every known location costs nothing and turns a silent total failure
+ * into a working tool set.
+ */
+export function resolveModelContext() {
+  const roots = [
+    [typeof document !== 'undefined' ? document : null, 'document.modelContext'],
+    [typeof navigator !== 'undefined' ? navigator : null, 'navigator.modelContext'],
+    [typeof window !== 'undefined' ? window : null, 'window.modelContext'],
+  ];
+  for (const [root, label] of roots) {
+    const ctx = root && root.modelContext;
+    if (ctx && (typeof ctx.registerTool === 'function' || typeof ctx.provideContext === 'function')) {
+      return { ctx, label };
+    }
+  }
+  return { ctx: null, label: null };
+}
+
 export function registerTools(state, dispatch) {
-  if (typeof document === 'undefined' || !document.modelContext) {
-    return { supported: false, names: [], dispose: () => {} };
+  const { ctx, label } = resolveModelContext();
+  if (!ctx) {
+    return { supported: false, api: null, names: [], dispose: () => {} };
   }
 
   const ac = new AbortController();
   const opts = { signal: ac.signal };
   const names = [];
+  const tools = [];
   // registerTool may return a promise; we do not need to await it to keep going.
+  // Some implementations do not accept the options argument at all, so fall back
+  // to a bare call rather than losing the tool.
   const reg = (tool) => {
     names.push(tool.name);
-    return document.modelContext.registerTool(tool, opts);
+    tools.push(tool);
+    if (typeof ctx.registerTool !== 'function') return undefined;
+    try {
+      return ctx.registerTool(tool, opts);
+    } catch {
+      try {
+        return ctx.registerTool(tool);
+      } catch {
+        return undefined;
+      }
+    }
   };
 
   // Apply an action through the same pure reducer the UI uses, so a tool can
@@ -438,5 +477,21 @@ export function registerTools(state, dispatch) {
     });
   }
 
-  return { supported: true, names, dispose: () => ac.abort() };
+  // A client with only the older array-shaped API takes the whole set at once.
+  if (typeof ctx.registerTool !== 'function' && typeof ctx.provideContext === 'function') {
+    try { ctx.provideContext({ tools }); } catch { /* nothing better to do */ }
+  }
+
+  // Aborting is the documented teardown, but honour an explicit unregister too
+  // so a client that ignores the signal does not accumulate stale tools.
+  const dispose = () => {
+    ac.abort();
+    if (typeof ctx.unregisterTool === 'function') {
+      for (const name of names) {
+        try { ctx.unregisterTool(name); } catch { /* already gone */ }
+      }
+    }
+  };
+
+  return { supported: true, api: label, names, dispose };
 }

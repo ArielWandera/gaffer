@@ -3,7 +3,7 @@
 import { initialState, BY_ID } from '../src/state/initialState.js';
 import { reducer } from '../src/state/reducer.js';
 import { validateSquad, squadWarnings } from '../src/state/validate.js';
-import { registerTools } from '../src/webmcp/tools.js';
+import { registerTools, resolveModelContext } from '../src/webmcp/tools.js';
 
 let fail = 0;
 const ok = (c, m) => { console.log(`${c ? ' ok ' : 'FAIL'}  ${m}`); if (!c) fail++; };
@@ -99,6 +99,45 @@ delete globalThis.document.modelContext;
 const none = registerTools(state, () => {});
 ok(none.supported === false, 'no crash in a browser without WebMCP');
 globalThis.document.modelContext = saved;
+
+
+// 10 — the client may keep the model context somewhere else. A client that only
+// exposes the older navigator.modelContext used to get no tools at all: we
+// checked document, found nothing and returned silently. Prove both spellings
+// work, and that an implementation which rejects the options argument still
+// gets its tools.
+{
+  const saved = globalThis.document;
+  const seen = new Map();
+  const shim = (accepts) => ({
+    registerTool(tool, opts) {
+      if (!accepts && opts) throw new TypeError('options not supported');
+      seen.set(tool.name, tool);
+    },
+  });
+
+  const setNav = (v) => Object.defineProperty(globalThis, 'navigator', {
+    value: v, configurable: true, writable: true,
+  });
+  globalThis.document = {};
+  setNav({ modelContext: shim(true) });
+  // initialState, not the mutated `state` above: the tool set is state-dependent
+  // and this check is about where the context lives, not which moves are legal.
+  let r = registerTools(initialState, () => {});
+  ok(r.supported && r.names.length === 7, `navigator.modelContext found (${r.api})`);
+
+  seen.clear();
+  setNav({ modelContext: shim(false) });
+  r = registerTools(initialState, () => {});
+  ok(seen.size === 7, 'tools still register when the options argument is rejected');
+
+  setNav(undefined);
+  globalThis.document = {};
+  ok(resolveModelContext().ctx === null, 'no context anywhere is reported, not thrown');
+  ok(registerTools(initialState, () => {}).supported === false, 'registerTools reports unsupported cleanly');
+
+  globalThis.document = saved;
+}
 
 console.log(fail ? `\n${fail} FAILED` : '\nall checks passed');
 process.exit(fail ? 1 : 0);
