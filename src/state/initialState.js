@@ -9,29 +9,24 @@ export const CURRENT_GW = data.current_gameweek;
 
 export const BY_ID = Object.fromEntries(PLAYERS.map((p) => [p.id, p]));
 
-// The real squad of FPL entry 6731094 ("João you doing?") as it stood after
-// gameweek 2, pulled from the public /entry/{id}/event/{gw}/picks/ endpoint.
-// It is a genuinely tight board and that is the point: the bank is empty, so
-// nothing can be bought before something is sold; Brighton are already at the
-// three-per-club limit; and Anderson and Muniz are both out of form. The agent
-// has real constraints to work inside rather than a contrived one.
+// A neutral default board, so a first-time visitor sees a squad rather than
+// somebody else's team — and so loading a real one is a visible change.
 //
-// Note what this squad is: the *saved* team. FPL's own API will serve it to
-// anyone. The provisional version — the transfer lined up but not confirmed —
-// exists in no endpoint at any auth level. That draft layer is what this board
-// hands to the agent, and it is the whole reason the project exists.
+// It is deliberately imperfect: Watkins has left the league and is still in the
+// starting XI, the bank is tight at £0.8m, and Arsenal are already at the
+// three-per-club limit. There is somewhere for the agent to go from here.
 const SEED = [
-  [109, true], [496, false],                                      // GK
-  [4, true], [445, true], [469, true], [304, false], [423, false],// DEF
-  [127, true], [426, true], [124, true], [368, true], [481, true],// MID
-  [411, true], [165, true], [271, false],                         // FWD
+  [226, true], [109, false],                                      // GK
+  [8, true], [10, true], [115, true], [586, true], [277, false],  // DEF
+  [12, true], [399, true], [367, true], [454, true], [565, false],// MID
+  [411, true], [55, true], [464, false],                          // FWD
 ];
 
 export const initialState = {
   squad: SEED.map(([id, starting], slot) => ({ id, starting, slot })),
   captain: 411,        // Haaland
-  viceCaptain: 426,    // B.Fernandes
-  bank: 0.0,
+  viceCaptain: 12,     // Saka
+  bank: 0.8,
   freeTransfers: 1,
   transfersMade: [],
   chipsUsed: [],
