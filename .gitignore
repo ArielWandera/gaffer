@@ -3,3 +3,10 @@ dist
 .vercel
 .DS_Store
 *.local
+
+# Submission copy — drafted here, pasted into Devpost, not part of the project.
+docs/DEVPOST-STORY.md
+docs/SUBMISSION.md
+docs/VIDEO-SCRIPT.md
+docs/DEMO-SCRIPT.md
+docs/RECORDING-CONSOLE.md
