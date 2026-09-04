@@ -5,6 +5,11 @@ import { RULES, POSITIONS } from './fplRules.js';
 // one and can correct itself on the next call.
 export function validateSquad(state, byId) {
   const violations = [];
+
+  // No squad yet is a different thing from an illegal squad. Listing fifteen
+  // violations at someone who has not loaded a team is noise, not help.
+  if (state.squad.length === 0) return { valid: false, empty: true, violations: [] };
+
   const squad = state.squad.map((s) => ({ ...s, player: byId[s.id] })).filter((s) => s.player);
 
   if (state.squad.length !== RULES.SQUAD_SIZE) {

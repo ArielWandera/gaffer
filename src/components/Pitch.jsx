@@ -31,6 +31,21 @@ export default function Pitch({ state, dispatch }) {
   const selected = state.selectedId ? state.squad.find((s) => s.id === state.selectedId) : null;
   const selectedPlayer = selected ? BY_ID[selected.id] : null;
 
+  if (state.squad.length === 0) {
+    return (
+      <section className="pitch pitch-empty" aria-label="Squad pitch">
+        <div className="empty-note">
+          <h2>No squad loaded</h2>
+          <p>
+            Load your Fantasy Premier League team with the box on the left, or try the
+            example squad. Until a squad is on the board there is nothing to transfer
+            and nobody to captain — so those tools are not offered to the agent at all.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="pitch" aria-label="Squad pitch">
       {POSITIONS.map((pos) => {

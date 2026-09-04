@@ -1,6 +1,6 @@
 // Headless walk through the freeze checklist. Drives the real reducer and the
 // real registerTools against a fake document.modelContext.
-import { initialState, BY_ID } from '../src/state/initialState.js';
+import { initialState, EXAMPLE_TEAM, BY_ID } from '../src/state/initialState.js';
 import { reducer } from '../src/state/reducer.js';
 import { validateSquad, squadWarnings } from '../src/state/validate.js';
 import { registerTools, resolveModelContext } from '../src/webmcp/tools.js';
@@ -19,7 +19,12 @@ globalThis.document = {
   },
 };
 
-let state = initialState;
+// The board now starts empty, so every squad test needs one loaded first —
+// through the same reducer path the Load button and the agent's tool both use.
+let state = reducer(initialState, { type: 'loadTeam', team: EXAMPLE_TEAM });
+// Kept aside because `state` is mutated as the checks run; anything asserting a
+// tool *count* needs a board that has not had its wildcard played.
+const FRESH = state;
 const harness = () => {
   const { names, dispose } = registerTools(state, (a) => { state = reducer(state, a); });
   return { names, dispose };
@@ -31,13 +36,24 @@ const call = async (name, args) => {
 };
 const cycle = async (fn) => { const h = harness(); const r = await fn(h); h.dispose(); return r; };
 
-// 1 — seed squad is legal
-ok(validateSquad(state, BY_ID).valid, 'seed squad passes validation');
-ok(state.squad.length === 15, 'seed squad has 15 players');
+// 1 — an empty board offers only the moves that are legal with no squad
+{
+  const empty = registerTools(initialState, () => {});
+  ok(empty.names.length === 3, `empty board registers three tools (${empty.names.join(', ')})`);
+  ok(!empty.names.includes('propose_transfer') && !empty.names.includes('set_captain'),
+    'nothing squad-dependent is offered before a squad exists');
+  ok(empty.names.includes('load_manager_team'), 'loading a team is offered');
+  ok(validateSquad(initialState, BY_ID).empty === true, 'an empty board reports empty, not fifteen violations');
+  empty.dispose();
+}
+
+// 1b — the example squad loads and is legal
+ok(validateSquad(state, BY_ID).valid, 'example squad passes validation');
+ok(state.squad.length === 15, 'example squad has 15 players');
 
 // 2 — tool list
 const first = await cycle(async (h) => h.names);
-ok(first.length === 9, `nine tools registered (${first.join(', ')})`);
+ok(first.length === 9, `nine tools registered imperatively (${first.join(', ')})`);
 ok(first.includes('make_free_transfer') && !first.includes('take_points_hit'), 'free-transfer tool present, hit tool absent at 1 FT');
 
 // 3 — get_squad_state reflects a MANUAL change made by clicking
@@ -144,12 +160,12 @@ globalThis.document.modelContext = saved;
   setNav({ modelContext: shim(true) });
   // initialState, not the mutated `state` above: the tool set is state-dependent
   // and this check is about where the context lives, not which moves are legal.
-  let r = registerTools(initialState, () => {});
+  let r = registerTools(FRESH, () => {});
   ok(r.supported && r.names.length === 9, `navigator.modelContext found (${r.api})`);
 
   seen.clear();
   setNav({ modelContext: shim(false) });
-  r = registerTools(initialState, () => {});
+  r = registerTools(FRESH, () => {});
   ok(seen.size === 9, 'tools still register when the options argument is rejected');
 
   setNav(undefined);

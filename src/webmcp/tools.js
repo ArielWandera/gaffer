@@ -150,6 +150,8 @@ export function registerTools(state, dispatch) {
     }
   };
 
+  const hasSquad = state.squad.length === RULES.SQUAD_SIZE;
+
   // Apply an action through the same pure reducer the UI uses, so a tool can
   // check the *result* of a move before committing it.
   const preview = (action) => reducer(state, { ...action, source: 'agent' });
@@ -251,7 +253,48 @@ export function registerTools(state, dispatch) {
     },
   });
 
+  reg({
+    name: 'load_manager_team',
+    description:
+      'Load a real Fantasy Premier League squad onto the board from that manager\'s team id — ' +
+      'the number in the URL when they view their team on the FPL site. This fetches the squad ' +
+      'they have *saved*: their fifteen players, bank, captain and vice-captain. It replaces ' +
+      'whatever is currently on the board, discarding any unsaved planning, so confirm with the ' +
+      'user before calling it if they have already made changes. Ask them for their team id ' +
+      'rather than guessing one.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        entry_id: { type: 'number', description: 'The manager\'s FPL team id, e.g. 6731094.' },
+      },
+      required: ['entry_id'],
+    },
+    async execute({ entry_id }) {
+      const r = await fetchTeam(entry_id);
+      if (!r.ok) return text({ ok: false, error: r.error });
+
+      commit({ type: 'loadTeam', team: r.team });
+      return text({
+        ok: true,
+        summary: `Loaded "${r.team.team_name}" (${r.team.manager}) as it stood after gameweek ${r.team.gameweek}.`,
+        bank_m: r.team.bank,
+        squad_value_m: r.team.squad_value,
+        overall_rank: r.team.overall_rank,
+        note:
+          'This is the saved squad. Anything the user changes on the board from here exists only ' +
+          'in this tab — call get_squad_state to read it.',
+      });
+    },
+  });
+
   // ------------------------------------------------------------- write tools
+  //
+  // Everything below needs a squad. With an empty board there is nothing to
+  // transfer, nobody to captain and no XI to reshape, so none of these are
+  // legal moves and none of them are registered. An agent looking at a fresh
+  // board sees three tools — read the state, search the market, load a team —
+  // and that is genuinely all it can do. Load a squad and the rest appear.
+  if (!hasSquad) return finish();
 
   reg({
     name: 'propose_transfer',
@@ -349,40 +392,6 @@ export function registerTools(state, dispatch) {
 
       commit(action);
       return text({ ok: true, summary: `${p.name} is now ${role === 'vice' ? 'vice-captain' : 'captain'}.` });
-    },
-  });
-
-  reg({
-    name: 'load_manager_team',
-    description:
-      'Load a real Fantasy Premier League squad onto the board from that manager\'s team id — ' +
-      'the number in the URL when they view their team on the FPL site. This fetches the squad ' +
-      'they have *saved*: their fifteen players, bank, captain and vice-captain. It replaces ' +
-      'whatever is currently on the board, discarding any unsaved planning, so confirm with the ' +
-      'user before calling it if they have already made changes. Ask them for their team id ' +
-      'rather than guessing one.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        entry_id: { type: 'number', description: 'The manager\'s FPL team id, e.g. 6731094.' },
-      },
-      required: ['entry_id'],
-    },
-    async execute({ entry_id }) {
-      const r = await fetchTeam(entry_id);
-      if (!r.ok) return text({ ok: false, error: r.error });
-
-      commit({ type: 'loadTeam', team: r.team });
-      return text({
-        ok: true,
-        summary: `Loaded "${r.team.team_name}" (${r.team.manager}) as it stood after gameweek ${r.team.gameweek}.`,
-        bank_m: r.team.bank,
-        squad_value_m: r.team.squad_value,
-        overall_rank: r.team.overall_rank,
-        note:
-          'This is the saved squad. Anything the user changes on the board from here exists only ' +
-          'in this tab — call get_squad_state to read it.',
-      });
     },
   });
 
@@ -576,21 +585,24 @@ export function registerTools(state, dispatch) {
     });
   }
 
-  // A client with only the older array-shaped API takes the whole set at once.
-  if (typeof ctx.registerTool !== 'function' && typeof ctx.provideContext === 'function') {
-    try { ctx.provideContext({ tools }); } catch { /* nothing better to do */ }
-  }
+  return finish();
 
-  // Aborting is the documented teardown, but honour an explicit unregister too
-  // so a client that ignores the signal does not accumulate stale tools.
-  const dispose = () => {
-    ac.abort();
-    if (typeof ctx.unregisterTool === 'function') {
-      for (const name of names) {
-        try { ctx.unregisterTool(name); } catch { /* already gone */ }
-      }
+  // Both exits — the empty board and the full one — leave through here, so the
+  // older array-shaped API and the teardown behave the same either way.
+  function finish() {
+    if (typeof ctx.registerTool !== 'function' && typeof ctx.provideContext === 'function') {
+      try { ctx.provideContext({ tools }); } catch { /* nothing better to do */ }
     }
-  };
-
-  return { supported: true, api: label, names, dispose };
+    // Aborting is the documented teardown, but honour an explicit unregister
+    // too so a client that ignores the signal does not accumulate stale tools.
+    const dispose = () => {
+      ac.abort();
+      if (typeof ctx.unregisterTool === 'function') {
+        for (const name of names) {
+          try { ctx.unregisterTool(name); } catch { /* already gone */ }
+        }
+      }
+    };
+    return { supported: true, api: label, names, dispose };
+  }
 }

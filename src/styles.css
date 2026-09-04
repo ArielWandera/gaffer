@@ -438,3 +438,14 @@ button.primary:disabled { background: var(--line); color: var(--ink-faint); curs
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 .stats { border-radius: 4px; overflow: hidden; }
+
+/* ── the empty board ──────────────────────────────────────────────────────
+   What a first-time visitor sees. It has to explain itself without being a
+   wall of text, and it doubles as the clearest statement of the idea. */
+.pitch-empty { display: grid; place-items: center; min-height: 340px; }
+.empty-note { max-width: 380px; text-align: center; }
+.empty-note h2 {
+  font-family: var(--condensed); font-size: 26px; font-weight: 600;
+  color: var(--ink-dim); margin: 0 0 8px; letter-spacing: 0.01em;
+}
+.empty-note p { margin: 0; font-size: 12.5px; line-height: 1.6; color: var(--ink-faint); }

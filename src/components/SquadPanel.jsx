@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BY_ID, SNAPSHOT_DATE } from '../state/initialState.js';
+import { BY_ID, EXAMPLE_TEAM, SNAPSHOT_DATE } from '../state/initialState.js';
 import { RULES, CHIP_LABELS } from '../state/fplRules.js';
 import { pointsHit } from '../state/reducer.js';
 import { validateSquad, squadWarnings } from '../state/validate.js';
@@ -41,6 +41,10 @@ export default function SquadPanel({ state, dispatch, mcpStatus }) {
     }
   };
 
+  // Nothing below the load box means anything without a squad: a bank of zero,
+  // an unplayed chip and a Copy plan button are all noise on an empty board.
+  const hasSquad = state.squad.length > 0;
+
   const load = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -80,17 +84,27 @@ export default function SquadPanel({ state, dispatch, mcpStatus }) {
         </div>
         {loadError
           ? <p className="load-err">{loadError}</p>
-          : <p className="fine">The number in the URL when you view your team on the FPL site.</p>}
+          : <p className="fine">
+              The number in the URL when you view your team on the FPL site.
+              {' '}
+              <button
+                type="button"
+                className="linkish"
+                onClick={() => dispatch({ type: 'loadTeam', team: EXAMPLE_TEAM })}
+              >
+                Or try an example squad
+              </button>
+            </p>}
       </form>
 
-      <dl className="stats">
+      {hasSquad && <dl className="stats">
         <div><dt>Bank</dt><dd className={state.bank < 0 ? 'bad' : ''}>£{state.bank.toFixed(1)}m</dd></div>
         <div><dt>Value</dt><dd>£{value.toFixed(1)}m</dd></div>
         <div><dt>Free transfers</dt><dd>{state.freeTransfers}<span className="of"> / {RULES.MAX_BANKED_TRANSFERS}</span></dd></div>
         <div><dt>Points cost</dt><dd className={hit ? 'bad' : ''}>{hit ? `−${hit}` : '0'}</dd></div>
-      </dl>
+      </dl>}
 
-      <section className="chips">
+      {hasSquad && <section className="chips">
         <h3>Chips</h3>
         <div className="chip-row">
           {RULES.CHIPS.map((c) => {
@@ -104,7 +118,7 @@ export default function SquadPanel({ state, dispatch, mcpStatus }) {
           })}
         </div>
         <p className="fine">Two of each per season, one per half. First set expires at GW{RULES.FIRST_HALF_LAST_GW}.</p>
-      </section>
+      </section>}
 
       {violations.length > 0 && (
         <section className="alerts bad-alerts">
@@ -143,9 +157,9 @@ export default function SquadPanel({ state, dispatch, mcpStatus }) {
         </section>
       )}
 
-      <button type="button" className="primary" onClick={copy} disabled={!valid && violations.length > 0}>
+      {hasSquad && <button type="button" className="primary" onClick={copy} disabled={!valid && violations.length > 0}>
         {copied ? 'Copied' : 'Copy plan'}
-      </button>
+      </button>}
 
       <footer className="foot">
         <span className={`mcp ${mcpStatus.ok ? 'on' : 'off'}`}>
