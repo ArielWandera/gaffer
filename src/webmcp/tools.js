@@ -80,14 +80,14 @@ export function serialiseState(state) {
  *
  * THE IDEA: the registered tool set *is* the set of legal moves. When the user
  * runs out of free transfers, `make_free_transfer` is not left in place to
- * return an error — it is unregistered and `take_points_hit` takes its place.
+ * return an error. It is unregistered, and `take_points_hit` takes its place.
  * When the wildcard is played, `play_wildcard` ceases to exist. An illegal move
  * is therefore not rejected; it is uncallable.
  *
  * App.jsx calls this from a useEffect keyed on the whole state object, so any
  * change re-runs it: the previous AbortController fires, every tool from the
  * last render is torn down, and the set valid for the new state is registered.
- * Re-registration is itself the change signal — per Chrome's guidance a page
+ * Re-registration is itself the change signal; per Chrome's guidance a page
  * manages its own tool set with registerTool and AbortSignal, and does not
  * dispatch a change event of its own.
  */
@@ -95,13 +95,13 @@ export function serialiseState(state) {
  * Find the model context wherever this client keeps it.
  *
  * `document.modelContext` is the current location and the one Chrome ships.
- * `navigator.modelContext` is the older spelling — deprecated in Chrome 150 but
+ * `navigator.modelContext` is the older spelling, deprecated in Chrome 150 but
  * still what some clients expose, and a client that only has that one used to
  * make us fail closed: we registered nothing at all and said nothing about it.
  * Checking every known location costs nothing and turns a silent total failure
  * into a working tool set.
  */
-// "3-5-2" — the shape of the XI, which is what a manager actually reads.
+// "3-5-2", the shape of the XI, which is what a manager actually reads.
 function formationOf(state) {
   const xi = state.squad.filter((s) => s.starting).map((s) => BY_ID[s.id]);
   return ['DEF', 'MID', 'FWD'].map((pos) => xi.filter((p) => p && p.position === pos).length).join('-');
@@ -256,7 +256,7 @@ export function registerTools(state, dispatch) {
   reg({
     name: 'load_manager_team',
     description:
-      'Load a real Fantasy Premier League squad onto the board from that manager\'s team id — ' +
+      'Load a real Fantasy Premier League squad onto the board from that manager\'s team id, ' +
       'the number in the URL when they view their team on the FPL site. This fetches the squad ' +
       'they have *saved*: their fifteen players, bank, captain and vice-captain. It replaces ' +
       'whatever is currently on the board, discarding any unsaved planning, so confirm with the ' +
@@ -282,7 +282,7 @@ export function registerTools(state, dispatch) {
         overall_rank: r.team.overall_rank,
         note:
           'This is the saved squad. Anything the user changes on the board from here exists only ' +
-          'in this tab — call get_squad_state to read it.',
+          'in this tab, call get_squad_state to read it.',
       });
     },
   });
@@ -292,7 +292,7 @@ export function registerTools(state, dispatch) {
   // Everything below needs a squad. With an empty board there is nothing to
   // transfer, nobody to captain and no XI to reshape, so none of these are
   // legal moves and none of them are registered. An agent looking at a fresh
-  // board sees three tools — read the state, search the market, load a team —
+  // board sees three tools, read the state, search the market, load a team -
   // and that is genuinely all it can do. Load a squad and the rest appear.
   if (!hasSquad) return finish();
 
@@ -303,7 +303,7 @@ export function registerTools(state, dispatch) {
       'The move is validated against the FPL rules first: if it would break the fifteen-player ' +
       'shape, exceed three players from one club, or overdraw the bank, nothing changes and the ' +
       'exact violation is returned so you can pick a different player and try again. ' +
-      'You must give a reason — it is shown to the user next to the transfer.',
+      'You must give a reason, it is shown to the user next to the transfer.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -399,8 +399,8 @@ export function registerTools(state, dispatch) {
     name: 'substitute_player',
     description:
       'Swap one starting XI player with one player on the bench. The two swap places, so the XI ' +
-      'stays at eleven. The resulting formation must still be legal — one GK, three to five DEF, ' +
-      'two to five MID, one to three FWD — and the armbands must still sit in the XI. If the swap ' +
+      'stays at eleven. The resulting formation must still be legal, one GK, three to five DEF, ' +
+      'two to five MID, one to three FWD, and the armbands must still sit in the XI. If the swap ' +
       'would break any of that, nothing changes and the violation is returned so you can pick a ' +
       'different pairing. Positions do not have to match: a defender may come on for a midfielder ' +
       'as long as the shape that results is one you are allowed to field.',
@@ -495,7 +495,7 @@ export function registerTools(state, dispatch) {
           ? `The user is playing their ${CHIP_LABELS[state.activeChip]}, so transfers are unlimited and free ` +
             'this gameweek. Swap one player for another at no points cost. The squad rules still apply.'
           : `Swap one player for another using one of the user's ${state.freeTransfers} free transfer(s), ` +
-            'costing zero points. Use this rather than take_points_hit whenever a free transfer remains — ' +
+            'costing zero points. Use this rather than take_points_hit whenever a free transfer remains, ' +
             'this tool only exists while one does. The move is validated first and refused with the exact ' +
             'violation if it is illegal.',
       inputSchema: {
@@ -515,7 +515,7 @@ export function registerTools(state, dispatch) {
       description:
         'Swap one player for another when NO free transfers remain. This deducts 4 points from the ' +
         "user's gameweek score, so only use it when the gain clearly outweighs four points, and say " +
-        'so in the reason. The free-transfer tool is not available because the user has none left — ' +
+        'so in the reason. The free-transfer tool is not available because the user has none left, ' +
         'this is the only transfer route open right now.',
       inputSchema: {
         type: 'object',
@@ -587,7 +587,7 @@ export function registerTools(state, dispatch) {
 
   return finish();
 
-  // Both exits — the empty board and the full one — leave through here, so the
+  // Both exits, the empty board and the full one, leave through here, so the
   // older array-shaped API and the teardown behave the same either way.
   function finish() {
     if (typeof ctx.registerTool !== 'function' && typeof ctx.provideContext === 'function') {

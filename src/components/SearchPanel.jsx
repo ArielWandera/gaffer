@@ -21,7 +21,7 @@ export default function SearchPanel({ state, dispatch }) {
   }, [state.squad]);
 
   // When a squad player is selected, the panel narrows to legal replacements
-  // for them — same position, inside budget — so the click-to-swap always works.
+  // for them, same position, inside budget, so the click-to-swap always works.
   const results = useMemo(() => {
     const activePos = selected ? selected.position : pos;
     const cap = selected ? budget : (maxPrice ? Number(maxPrice) : null);

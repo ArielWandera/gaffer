@@ -6,15 +6,15 @@ import { validateSquad, squadWarnings } from '../state/validate.js';
 import { fetchTeam } from '../state/loadTeam.js';
 
 function planText(state) {
-  const lines = [`Gaffer — GW${state.gameweek} plan`, ''];
+  const lines = [`Gaffer: GW${state.gameweek} plan`, ''];
   if (state.transfersMade.length === 0) lines.push('No transfers.');
   for (const t of state.transfersMade) {
     lines.push(`OUT ${BY_ID[t.out].name} (${BY_ID[t.out].team})  ->  IN ${BY_ID[t.in].name} (${BY_ID[t.in].team})`);
     if (t.reason) lines.push(`    ${t.reason}`);
   }
   lines.push('');
-  lines.push(`Captain: ${state.captain ? BY_ID[state.captain].name : '—'}`);
-  lines.push(`Vice:    ${state.viceCaptain ? BY_ID[state.viceCaptain].name : '—'}`);
+  lines.push(`Captain: ${state.captain ? BY_ID[state.captain].name : '-'}`);
+  lines.push(`Vice:    ${state.viceCaptain ? BY_ID[state.viceCaptain].name : '-'}`);
   lines.push(`Bank:    £${state.bank.toFixed(1)}m`);
   lines.push(`Cost:    ${pointsHit(state)} points`);
   if (state.activeChip) lines.push(`Chip:    ${CHIP_LABELS[state.activeChip]}`);
@@ -82,19 +82,17 @@ export default function SquadPanel({ state, dispatch, mcpStatus }) {
             {loading ? '…' : 'Load'}
           </button>
         </div>
-        {loadError
-          ? <p className="load-err">{loadError}</p>
-          : <p className="fine">
-              The number in the URL when you view your team on the FPL site.
-              {' '}
-              <button
-                type="button"
-                className="linkish"
-                onClick={() => dispatch({ type: 'loadTeam', team: EXAMPLE_TEAM })}
-              >
-                Or try an example squad
-              </button>
-            </p>}
+        {loadError && <p className="load-err">{loadError}</p>}
+        <p className="fine">The number in the URL when you view your team on the FPL site.</p>
+        {!hasSquad && (
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => dispatch({ type: 'loadTeam', team: EXAMPLE_TEAM })}
+          >
+            Try an example squad
+          </button>
+        )}
       </form>
 
       {hasSquad && <dl className="stats">

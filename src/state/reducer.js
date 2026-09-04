@@ -4,7 +4,7 @@ import { RULES } from './fplRules.js';
 const round = (n) => Math.round(n * 10) / 10;
 
 // Every mutation funnels through here, so the state the read tool reports is
-// always the state the screen is showing — including changes the user made by hand.
+// always the state the screen is showing, including changes the user made by hand.
 export function reducer(state, action) {
   switch (action.type) {
     case 'select':

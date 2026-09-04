@@ -18,7 +18,7 @@ export const BY_ID = Object.fromEntries(PLAYERS.map((p) => [p.id, p]));
 // EXAMPLE_SQUAD is here so someone without an FPL team id can still use the
 // app. It is deliberately imperfect: Watkins has left the league and is still
 // in the XI, the bank is tight, and Arsenal are already at the three-per-club
-// limit — so there is somewhere to go from here.
+// limit, so there is somewhere to go from here.
 const EXAMPLE_SQUAD = [
   [226, true], [109, false],                                      // GK
   [8, true], [10, true], [115, true], [586, true], [277, false],  // DEF

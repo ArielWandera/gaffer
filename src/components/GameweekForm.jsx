@@ -3,7 +3,7 @@ import { CURRENT_GW } from '../state/initialState.js';
 /**
  * The declarative WebMCP API: a plain HTML form annotated with `toolname`,
  * `tooldescription` and `toolparamdescription`. The browser exposes it as a
- * callable tool with no JavaScript registration at all — the agent fills the
+ * callable tool with no JavaScript registration at all. The agent fills the
  * fields and submits, and the page handles the submit exactly as it would for
  * a human. Every other tool in this app uses the imperative API in
  * src/webmcp/tools.js; this one is here to cover both.

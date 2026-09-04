@@ -1,4 +1,4 @@
-/* Gaffer — a tactics board, not a fantasy site.
+/* Gaffer, a tactics board, not a fantasy site.
    Dark slate ground, one warm signal colour for everything the agent does,
    and fixture difficulty as the single place real colour is allowed. */
 
@@ -24,7 +24,7 @@
   --bad-soft: rgba(242, 99, 90, 0.12);
   --warn: #e0aa48;
 
-  /* fixture difficulty, cool to hot — 3 stays neutral so it never reads as a
+  /* fixture difficulty, cool to hot, 3 stays neutral so it never reads as a
      verdict, and never competes with the agent amber */
   --fdr-1: #2ecfa4;
   --fdr-2: #74c95c;
@@ -344,7 +344,7 @@ button.primary:disabled { background: var(--line); color: var(--ink-faint); curs
    Clicking a player used to do nothing visible unless you happened to know a
    second click would swap them. The bar names the player and spells out what
    the click actually affords, so the armband and substitutions are reachable
-   by hand — the agent should not be able to do things the manager cannot. */
+   by hand, the agent should not be able to do things the manager cannot. */
 .selection-bar {
   display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
   margin: 2px auto 0; padding: 8px 12px;
@@ -374,7 +374,7 @@ button.primary:disabled { background: var(--line); color: var(--ink-faint); curs
    touchlines so it looks like a surface rather than a list, cards lift on
    hover, and the armband reads as an armband. */
 .pitch {
-  /* A halfway line across the pitch and a centre circle on it — faint enough to
+  /* A halfway line across the pitch and a centre circle on it, faint enough to
      read as a surface without competing with the cards sitting on top. */
   background:
     linear-gradient(var(--line-soft), var(--line-soft)) center/100% 1px no-repeat,
@@ -449,3 +449,25 @@ button.primary:disabled { background: var(--line); color: var(--ink-faint); curs
   color: var(--ink-dim); margin: 0 0 8px; letter-spacing: 0.01em;
 }
 .empty-note p { margin: 0; font-size: 12.5px; line-height: 1.6; color: var(--ink-faint); }
+
+/* ── the empty board ──────────────────────────────────────────────────────
+   Ghost slots in a 4-3-3, so a first-time visitor sees the shape of a squad
+   rather than a blank column. */
+.pitch-empty .card-ghost {
+  display: grid; place-items: center;
+  min-height: 64px; min-width: 96px;
+  background: none; box-shadow: none;
+  border: 1px dashed var(--line);
+  color: var(--ink-faint); font: 600 10px var(--ui); letter-spacing: 0.1em;
+}
+.empty-note {
+  max-width: 460px; margin: 14px auto 0; text-align: center;
+  font-size: 12px; line-height: 1.6; color: var(--ink-faint);
+}
+button.secondary {
+  align-self: flex-start;
+  background: none; color: var(--ink-dim);
+  border: 1px solid var(--line); border-radius: 3px;
+  padding: 6px 11px; font: 500 11px var(--ui); cursor: pointer;
+}
+button.secondary:hover { border-color: var(--agent); color: var(--agent); }

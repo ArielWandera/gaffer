@@ -2,12 +2,12 @@
  * Proxy for the public Fantasy Premier League endpoints.
  *
  * The FPL API sends no CORS headers, so a browser cannot call it from our
- * origin. This is the whole reason the function exists — it is a pass-through,
+ * origin. That is the whole reason the function exists. It is a pass-through,
  * not a backend. It holds no state, stores nothing, and needs no credentials:
  * every endpoint it touches is public.
  *
  * Note what it can and cannot reach. /entry/{id}/event/{gw}/picks/ returns the
- * squad a manager has *saved*. /my-team/{id}/ — the live one — answers 403
+ * squad a manager has *saved*. /my-team/{id}/, the live one, answers 403
  * without that manager's session cookie, and even authenticated it would only
  * ever return saved state. The provisional squad, the transfer lined up but not
  * confirmed, is in no endpoint at any level of access. That is the state this

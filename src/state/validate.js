@@ -26,12 +26,12 @@ export function validateSquad(state, byId) {
   for (const s of squad) perClub[s.player.team] = (perClub[s.player.team] || 0) + 1;
   for (const [club, n] of Object.entries(perClub)) {
     if (n > RULES.MAX_PER_CLUB) {
-      violations.push(`${n} players from ${club} — the limit is ${RULES.MAX_PER_CLUB} per club.`);
+      violations.push(`${n} players from ${club}. The limit is ${RULES.MAX_PER_CLUB} per club.`);
     }
   }
 
   if (state.bank < -1e-9) {
-    violations.push(`Bank is £${state.bank.toFixed(1)}m — you cannot go below £0.0m.`);
+    violations.push(`Bank is £${state.bank.toFixed(1)}m. You cannot go below £0.0m.`);
   }
 
   const xi = squad.filter((s) => s.starting);
@@ -58,7 +58,7 @@ export function validateSquad(state, byId) {
   return { valid: violations.length === 0, violations };
 }
 
-// Warnings are not rule breaks — an unavailable player in the XI is legal but costly.
+// Warnings are not rule breaks: an unavailable player in the XI is legal but costly.
 // Kept separate so validateSquad stays a pure legality check.
 export function squadWarnings(state, byId) {
   const out = [];

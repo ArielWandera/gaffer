@@ -10,7 +10,7 @@ export function Fixtures({ player, compact }) {
         <span
           key={f.gameweek + f.opponent}
           className={`fix fdr-${f.difficulty}`}
-          title={`GW${f.gameweek} ${f.home ? 'vs' : 'at'} ${f.opponent} — difficulty ${f.difficulty}/5`}
+          title={`GW${f.gameweek} ${f.home ? 'vs' : 'at'} ${f.opponent}, difficulty ${f.difficulty}/5`}
         >
           {f.home ? f.opponent : f.opponent.toLowerCase()}
         </span>
@@ -41,7 +41,7 @@ export default function PlayerCard({
         flagged && 'is-flagged',
         starting === false && 'is-benched',
       ].filter(Boolean).join(' ')}
-      title={p.news || `${p.name} — ${p.team} ${p.position} £${p.price}m`}
+      title={p.news || `${p.name}, ${p.team} ${p.position} £${p.price}m`}
     >
       <span className="card-top">
         <span className="club" data-club={p.team}>{p.team}</span>
@@ -53,7 +53,7 @@ export default function PlayerCard({
       <span className="name">{p.name}</span>
       <span className="card-bottom">
         <span className="price">£{p.price.toFixed(1)}</span>
-        <span className="form" title="Form — average points over recent games">{p.form.toFixed(1)}</span>
+        <span className="form" title="Form, average points over recent games">{p.form.toFixed(1)}</span>
       </span>
       <Fixtures player={p} compact={variant === 'pitch'} />
       {badge && <span className="card-badge">{badge}</span>}

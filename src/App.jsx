@@ -12,8 +12,8 @@ export default function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [mcp, setMcp] = useState({ ok: false, api: null, count: 0, names: [] });
 
-  // Keyed on the whole state object: any change to the squad — including one the
-  // user just made by clicking — tears down the previous tool set via its
+  // Keyed on the whole state object: any change to the squad, including one the
+  // user just made by clicking, tears down the previous tool set via its
   // AbortController and registers the set that is legal now. Re-registration is
   // how the agent learns the moves have changed; the page fires no event itself.
   useEffect(() => {
